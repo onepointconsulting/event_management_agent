@@ -6,7 +6,9 @@ These are the interfaces:
 
 #### Events by keyword and country
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive&limit=20&offset=0&filterByCountry=United%20Kingdom&includeDescription=true
+
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive%20%20London&limit=20&offset=0&filterByCountry=United%20Kingdom&includeDescription=true
+
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive&limit=10&offset=0
 
 #### Single Event Detail
