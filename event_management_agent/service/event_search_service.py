@@ -1,26 +1,30 @@
 import json
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union, Callable
 
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-
+from openai import Stream
 
 from event_management_agent.config import cfg
 from event_management_agent.tools.event_search_tool import (
     function_description_search,
     event_search,
 )  # Keep event search. Do not remove it
+from event_management_agent.log_factory import logger
 from event_management_agent.tools.single_event_tool import (
     function_description_single_event,
 )
 from event_management_agent.tools.event_url_tool import event_url_request
-from event_management_agent.service.event_enhancement_func import extract_event_ids, event_enhancement
+from event_management_agent.service.event_enhancement_func import (
+    extract_event_ids,
+    event_enhancement,
+)
 
 
-def event_search_openai(
+def extract_event_search_parameters(
     user_prompt: str,
     function_call_name: Optional[str] = None,
     function_output: Optional[str] = None,
-) -> Optional[ChatCompletionMessage]:
+):
     messages = [{"role": "user", "content": user_prompt}]
     kwargs = {"function_call": "auto"}
     if function_call_name is not None and function_output is not None:
@@ -29,13 +33,28 @@ def event_search_openai(
             {"role": "function", "name": function_call_name, "content": content}
         )
         kwargs = {}
+    return messages, kwargs
+
+
+def event_search_openai(
+    user_prompt: str,
+    function_call_name: Optional[str] = None,
+    function_output: Optional[str] = None,
+    stream: bool = False,
+) -> Optional[ChatCompletionMessage]:
+    messages, kwargs = extract_event_search_parameters(
+        user_prompt, function_call_name, function_output
+    )
     completion = cfg.open_ai_client.chat.completions.create(
         model=cfg.openai_model,
         temperature=cfg.open_ai_temperature,
         messages=messages,
         functions=[function_description_search, function_description_single_event],
-        **kwargs
+        stream=stream,
+        **kwargs,
     )
+    if stream:
+        return completion
     choices = completion.choices
     if len(choices) > 0:
         return choices[0].message
@@ -53,10 +72,15 @@ def execute_chat_function(
     if isinstance(func_args, str):
         func_args = json.loads(func_args)
     chosen_func = eval(func_name)
+    if "search" not in func_args:
+        if "locality" in func_args:
+            func_args['search'] = func_args["locality"]
+        else:
+            func_args['search'] = ""
     return func_name, chosen_func(**func_args)
 
 
-def process_search(user_prompt: str) -> str:
+def process_search(user_prompt: str, stream: bool) -> Union[str, Stream]:
     completion_message = event_search_openai(user_prompt)
     logger.info(completion_message)
     logger.info(type(completion_message))
@@ -68,7 +92,7 @@ def process_search(user_prompt: str) -> str:
 
         # Enhancing the events with URL information.
         events_json = json.loads(search_json)
-        if events_json['count'] == 0:
+        if "count" not in events_json or events_json["count"] == 0:
             return "Could not find any events"
         event_list = events_json["events"]
         event_ids = extract_event_ids(event_list)
@@ -78,35 +102,49 @@ def process_search(user_prompt: str) -> str:
 
         logger.info(event_list_with_urls)
         final_completion_message = event_search_openai(
-            user_prompt, func_name, event_list_with_urls
+            user_prompt, func_name, event_list_with_urls, stream=stream
         )
-        logger.info("")
-        logger.info(final_completion_message)
-        return final_completion_message.content
+        if isinstance(final_completion_message, dict):
+            logger.info("")
+            logger.info(final_completion_message)
+            return final_completion_message.content
+        else:
+            return final_completion_message
+
+
+def process_stream(stream: Stream, stream_func: Callable):
+    for chunk in stream:
+        chunk_message = chunk.choices[0].delta  # extract the message
+        if chunk_message.content is not None:
+            message_text = chunk_message.content
+            stream_func(message_text)
+
+
+async def aprocess_stream(stream: Optional[Stream], stream_func: Callable):
+    if stream is None:
+        await stream_func("Sorry, I could not find any events")
+        return
+    for chunk in stream:
+        if not isinstance(chunk, str):
+            chunk_message = chunk.choices[0].delta  # extract the message
+            if chunk_message.content is not None:
+                message_text = chunk_message.content
+                await stream_func(message_text)
+        else:
+            logger.info("Chunk as string: %s", chunk)
+            await stream_func(chunk)
 
 
 if __name__ == "__main__":
-    from event_management_agent.log_factory import logger
 
     def process_experiment(user_prompt):
-        search_result = process_search(user_prompt)
-        logger.info(search_result)
+        search_result = process_search(user_prompt, True)
+        if isinstance(search_result, str):
+            logger.info(search_result)
+        else:
+            process_stream(search_result, lambda message: print(f"{message}", end=""))
 
-    # user_prompt = "Can you give all health related events in London?"
-    # search_result = process_search(user_prompt)
-    # logger.info(search_result)
-
-    # user_prompt = "Can you give all events about positive thinking in London?"
-    # search_result = process_search(user_prompt)
-    # logger.info(search_result)
-
-    # user_prompt = "Can you give all health related events in the United Kingdom?"
-    # search_result = process_search(user_prompt)
-    # logger.info(search_result)
-
-    process_experiment("Can you give all health related events in London?")
+    # process_experiment("Can you give all health related events in London?")
     process_experiment("Can you give all events about positive thinking in London?")
     process_experiment("Can you give all health related events in the United Kingdom?")
-    process_experiment("I am interested in events about women.")
-    
-    
+    # process_experiment("I am interested in events about women.")

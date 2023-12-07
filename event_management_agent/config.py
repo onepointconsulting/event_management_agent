@@ -17,6 +17,11 @@ class Config:
         api_key=openai_api_key,
     )
 
+    websocket_server = os.getenv("WEBSOCKET_SERVER")
+    assert websocket_server is not None
+    websocket_port = int(os.getenv("WEBSOCKET_PORT"))
+    websocket_cors_allowed_origins = os.getenv("WEBSOCKET_CORS_ALLOWED_ORIGINS", "*")
+
     def __repr__(self) -> str:
         return f"""
 

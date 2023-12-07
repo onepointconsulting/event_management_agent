@@ -27,5 +27,3 @@ if __name__ == "__main__":
     assert enhanced_list is not None
     logger.info(enhanced_list)
     logger.info(extract_event_ids(event_list))
-
-
