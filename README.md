@@ -19,6 +19,8 @@ GET https://events.brahmakumaris.org/bkregistration/events?eventIds=4256334,5678
 
 ## Installation instructions
 
+Please make sure to install [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) first.
+
 ```
 conda create -n event_management_agent python=3.12
 conda activate event_management_agent
