@@ -1,7 +1,9 @@
 import os
+
+from pathlib import Path
 from dotenv import load_dotenv
 from event_management_agent.log_factory import logger
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
 load_dotenv()
@@ -13,7 +15,7 @@ class Config:
     open_ai_temperature = float(os.getenv("OPENAI_TEMPERATURE", "0."))
     openai_model = os.getenv("OPENAI_MODEL")
     assert openai_model is not None
-    open_ai_client = OpenAI(
+    open_ai_client = AsyncOpenAI(
         api_key=openai_api_key,
     )
 
@@ -21,6 +23,11 @@ class Config:
     assert websocket_server is not None
     websocket_port = int(os.getenv("WEBSOCKET_PORT"))
     websocket_cors_allowed_origins = os.getenv("WEBSOCKET_CORS_ALLOWED_ORIGINS", "*")
+
+    project_root = Path(os.getenv("PROJECT_ROOT"))
+    assert project_root.exists()
+    include_description = os.getenv("INCLUDE_DESCRIPTION")
+    assert include_description in ["true", "false"]
 
     def __repr__(self) -> str:
         return f"""

@@ -28,6 +28,12 @@ pip install poetry
 poetry install
 ```
 
+## Configuration
+
+The application can be configured via a `.env` file. The easiest way to start is to copy the `.env_local` to `,env` and replace the missing variables.
+
+!Warning!: if you get an error regarding frozenlist compilation problems on Windows, please download Microsoft Visual C++ 14.0 or greater from https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
 ## Running the application
 
 Change directory to the root folder of the project and run:
@@ -36,6 +42,3 @@ Change directory to the root folder of the project and run:
 python .\event_management_agent\server\websocket_server.py
 ```
 
-## Configuration
-
-The application can be configured via a `.env` file. The easiest way to start is to copy the `.env_local` to `,env` and replace the missing variables.

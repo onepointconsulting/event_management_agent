@@ -3,6 +3,7 @@ import urllib.parse
 from typing import Optional, List
 from event_management_agent.tools.request_processing_func import process_request
 from event_management_agent.log_factory import logger
+from event_management_agent.config import cfg
 
 
 def event_search(
@@ -21,7 +22,7 @@ def event_search(
     tags_param = f"&tags={", ".join(tags)}" if len(tags) > 0 else ""
     if locality is not None and len(locality) > 0:
         search = f"{search} AND {locality}"
-    url = f"https://events.brahmakumaris.org/events-rest/event-search-v2?search={urllib.parse.quote_plus(search)}&limit={limit}&offset={offset}&{country_filter}{tags_param}"
+    url = f"https://events.brahmakumaris.org/events-rest/event-search-v2?search={urllib.parse.quote_plus(search)}&limit={limit}&offset={offset}&{country_filter}{tags_param}&includeDescription={cfg.include_description}"
     logger.info("Calling %s", url)
     return process_request(url, f"search for {search}")
 
@@ -39,7 +40,7 @@ function_description_search = {
             },
             "locality": {
                 "type": "string",
-                "description": "The name of a locality, like e.g: 'Dublin', 'Lisbon', 'Manchester'",
+                "description": "The name of a locality, like e.g: 'Dublin', 'Lisbon', 'Manchester', 'Lisboa'",
             },
             "country": {
                 "type": "string",

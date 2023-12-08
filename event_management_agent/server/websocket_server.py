@@ -1,11 +1,13 @@
-
 import socketio
 from aiohttp import web
 
 from event_management_agent.log_factory import logger
 from event_management_agent.config import cfg
 from event_management_agent.server.web_model import ResponseText
-from event_management_agent.service.event_search_service import process_search, aprocess_stream
+from event_management_agent.service.event_search_service import (
+    process_search,
+    aprocess_stream,
+)
 
 sio = socketio.AsyncServer(cors_allowed_origins=cfg.websocket_cors_allowed_origins)
 app = web.Application()
@@ -26,7 +28,7 @@ async def question(sid, data):
         response_text = ResponseText(response=message, sources=None)
         await sio.emit("response", response_text.model_dump_json(), room=sid)
 
-    search_result = process_search(data, True)
+    search_result = await process_search(data, True)
     await aprocess_stream(search_result, stream_to_client)
     await sio.emit("stopstreaming", room=sid)
 

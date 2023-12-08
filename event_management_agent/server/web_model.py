@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Union
 
+
 class ResponseText(BaseModel):
     response: str
     sources: Union[str, None]
