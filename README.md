@@ -25,3 +25,15 @@ conda activate event_management_agent
 pip install poetry
 poetry install
 ```
+
+## Running the application
+
+Change directory to the root folder of the project and run:
+
+```
+python .\event_management_agent\server\websocket_server.py
+```
+
+## Configuration
+
+The application can be configured via a `.env` file. The easiest way to start is to copy the `.env_local` to `,env` and replace the missing variables.
