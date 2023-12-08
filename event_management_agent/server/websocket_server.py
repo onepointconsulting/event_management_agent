@@ -19,17 +19,24 @@ def connect(sid, environ):
     logger.info("connect %s ", sid)
 
 
+async def send_simple_message(message: str, sid: str):
+    response_text = ResponseText(response=message, sources=None)
+    await sio.emit("response", response_text.model_dump_json(), room=sid)
+
 @sio.event
-async def question(sid, data):
+async def question(sid: str, data):
     logger.info("question (%s): %s", sid, data)
 
     async def stream_to_client(message: str):
         print(f"{message}", end="")
-        response_text = ResponseText(response=message, sources=None)
-        await sio.emit("response", response_text.model_dump_json(), room=sid)
+        await send_simple_message(message, sid)
 
-    search_result = await process_search(data, True)
-    await aprocess_stream(search_result, stream_to_client)
+    try:
+        search_result = await process_search(data, True)
+        await aprocess_stream(search_result, stream_to_client)
+    except:
+        logger.exception(f"Failed to process {data}")
+        await send_simple_message("Failed to process request. Please try again.", sid)
     await sio.emit("stopstreaming", room=sid)
 
 

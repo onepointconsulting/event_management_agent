@@ -118,7 +118,7 @@ async def process_search(user_prompt: str, stream: bool) -> Union[str, AsyncStre
             return final_completion_message
 
 
-async def process_stream(stream: AsyncStream, stream_func: Callable):
+async def process_stream(stream: Union[str, AsyncStream], stream_func: Callable):
     async for chunk in stream:
         chunk_message = chunk.choices[0].delta  # extract the message
         if chunk_message.content is not None:
@@ -126,19 +126,21 @@ async def process_stream(stream: AsyncStream, stream_func: Callable):
             stream_func(message_text)
 
 
-async def aprocess_stream(stream: Optional[AsyncStream], stream_func: Callable):
+async def aprocess_stream(stream: Union[str, AsyncStream], stream_func: Callable):
     if stream is None:
         await stream_func("Sorry, I could not find any events")
-        return
-    async for chunk in stream:
-        if not isinstance(chunk, str):
-            chunk_message = chunk.choices[0].delta  # extract the message
-            if chunk_message.content is not None:
-                message_text = chunk_message.content
-                await stream_func(message_text)
-        else:
-            logger.info("Chunk as string: %s", chunk)
-            await stream_func(chunk)
+    elif isinstance(stream, str):
+        await stream_func(stream)
+    else:
+        async for chunk in stream:
+            if not isinstance(chunk, str):
+                chunk_message = chunk.choices[0].delta  # extract the message
+                if chunk_message.content is not None:
+                    message_text = chunk_message.content
+                    await stream_func(message_text)
+            else:
+                logger.info("Chunk as string: %s", chunk)
+                await stream_func(chunk)
 
 
 if __name__ == "__main__":
