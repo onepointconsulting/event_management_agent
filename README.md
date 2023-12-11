@@ -42,3 +42,8 @@ Change directory to the root folder of the project and run:
 python .\event_management_agent\server\websocket_server.py
 ```
 
+## Running unit tests
+
+```
+python -m unittest
+```

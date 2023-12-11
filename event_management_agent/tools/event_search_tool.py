@@ -1,4 +1,5 @@
 import urllib.parse
+import json
 
 from typing import Optional, List
 from event_management_agent.tools.request_processing_func import process_request
@@ -11,6 +12,7 @@ def event_search(
     locality: Optional[str] = "",
     country: Optional[str] = "",
     tags: List[str] = [],
+    repeat: bool = True
 ) -> str:
     offset: int = 0
     limit: int = 20
@@ -21,10 +23,24 @@ def event_search(
     )
     tags_param = f"&tags={", ".join(tags)}" if len(tags) > 0 else ""
     if locality is not None and len(locality) > 0:
-        search = f"{search} AND {locality}"
+        if len(search) > 0:
+            # If the locality is not empty and the search also not, use the Lucene AND search operator
+            search = f"{search} AND {locality}"
+        else:
+            # If the locality is not empty but the search is, use the locality as search
+            search = locality
     url = f"https://events.brahmakumaris.org/events-rest/event-search-v2?search={urllib.parse.quote_plus(search)}&limit={limit}&offset={offset}&{country_filter}{tags_param}&includeDescription={cfg.include_description}"
     logger.info("Calling %s", url)
-    return process_request(url, f"search for {search}")
+    res = process_request(url, f"search for {search}")
+    parsed = json.loads(res)
+
+    events = parsed.get("events", [])
+
+    if len(events) == 0 and len(search) == 0 and len(country_filter) > 0 and repeat == True:
+        # If the search returns no events and the search is empty and the country filter is the only parameter, just search for the country filter in the second try.
+        return event_search(country_filter, repeat=False)
+    else:
+        return res
 
 
 function_description_search = {
@@ -58,5 +74,8 @@ function_description_search = {
 
 
 if __name__ == "__main__":
-    res = event_search("London", None, [])
+    res = event_search("", "", "England", [])
+    logger.info(res)
+
+    res = event_search("", "England", "", [])
     logger.info(res)

@@ -1,2 +1,8 @@
 [events]
 system_message="You are a helpful assistant."
+combined_message = """Here are the previous questions just for context:
+{history}
+
+Here is the question that you need to answer:
+{user_prompt}
+"""

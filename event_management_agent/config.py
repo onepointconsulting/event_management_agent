@@ -29,6 +29,9 @@ class Config:
     include_description = os.getenv("INCLUDE_DESCRIPTION")
     assert include_description in ["true", "false"]
 
+    history_size = int(os.getenv("HISTORY_SIZE"))
+    history_token_limit = int(os.getenv("HISTORY_TOKEN_LIMIT"))
+
     def __repr__(self) -> str:
         return f"""
 

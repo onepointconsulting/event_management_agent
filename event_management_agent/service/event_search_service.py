@@ -5,6 +5,9 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from openai import AsyncStream
 
 from event_management_agent.config import cfg
+from event_management_agent.server.session import (
+    WebsocketSession,
+)
 from event_management_agent.tools.event_search_tool import (
     function_description_search,
     event_search,
@@ -86,7 +89,9 @@ def execute_chat_function(
     return func_name, chosen_func(**func_args)
 
 
-async def process_search(user_prompt: str, stream: bool) -> Union[str, AsyncStream]:
+async def process_search(
+    user_prompt: str, session: WebsocketSession, stream: bool
+) -> Union[str, AsyncStream]:
     completion_message = await event_search_openai(user_prompt)
     logger.info(completion_message)
     logger.info(type(completion_message))
@@ -108,7 +113,10 @@ async def process_search(user_prompt: str, stream: bool) -> Union[str, AsyncStre
 
         logger.info(event_list_with_urls)
         final_completion_message = await event_search_openai(
-            user_prompt, func_name, event_list_with_urls, stream=stream
+            combine_history(user_prompt, session),
+            func_name,
+            event_list_with_urls,
+            stream=stream,
         )
         if isinstance(final_completion_message, dict):
             logger.info("")
@@ -116,6 +124,14 @@ async def process_search(user_prompt: str, stream: bool) -> Union[str, AsyncStre
             return final_completion_message.content
         else:
             return final_completion_message
+
+
+def combine_history(user_prompt: str, session: WebsocketSession) -> str:
+    history = session.messages_to_str()
+    template = prompts["events"]["combined_message"]
+    combined = template.format(history=history, user_prompt=user_prompt)
+    logger.info("Combined: %s", combined)
+    return combined
 
 
 async def process_stream(stream: Union[str, AsyncStream], stream_func: Callable):
@@ -144,7 +160,6 @@ async def aprocess_stream(stream: Union[str, AsyncStream], stream_func: Callable
 
 
 if __name__ == "__main__":
-
     import asyncio
 
     async def process_experiment(user_prompt):
@@ -152,9 +167,15 @@ if __name__ == "__main__":
         if isinstance(search_result, str):
             logger.info(search_result)
         else:
-            await process_stream(search_result, lambda message: print(f"{message}", end=""))
+            await process_stream(
+                search_result, lambda message: print(f"{message}", end="")
+            )
 
     # process_experiment("Can you give all health related events in London?")
     # process_experiment("Can you give all events about positive thinking in London?")
-    asyncio.run(process_experiment("Can you give all health related events in the United Kingdom?"))
+    asyncio.run(
+        process_experiment(
+            "Can you give all health related events in the United Kingdom?"
+        )
+    )
     # process_experiment("I am interested in events about women.")
