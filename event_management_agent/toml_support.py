@@ -17,3 +17,4 @@ prompts = read_prompts_toml()
 if __name__ == "__main__":
     print(prompts)
     print(prompts["events"]["system_message"])
+    print(prompts["events"]["combined_message"])

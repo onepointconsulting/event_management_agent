@@ -32,6 +32,8 @@ class Config:
     history_size = int(os.getenv("HISTORY_SIZE"))
     history_token_limit = int(os.getenv("HISTORY_TOKEN_LIMIT"))
 
+    search_results_size = int(os.getenv("SEARCH_RESULTS_SIZE"))
+
     def __repr__(self) -> str:
         return f"""
 

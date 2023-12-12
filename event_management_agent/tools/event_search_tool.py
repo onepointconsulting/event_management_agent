@@ -15,7 +15,7 @@ def event_search(
     repeat: bool = True,
 ) -> str:
     offset: int = 0
-    limit: int = 20
+    limit: int = cfg.search_results_size
     country_filter = (
         f"filterByCountry={urllib.parse.quote_plus(country.capitalize())}"
         if country is not None and len(country) > 0
