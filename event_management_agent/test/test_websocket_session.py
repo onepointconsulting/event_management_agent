@@ -1,7 +1,9 @@
 import unittest
 
 from event_management_agent.server.session import get_session
-from event_management_agent.test.web_session_provider import create_dummy_websocket_session
+from event_management_agent.test.web_session_provider import (
+    create_dummy_websocket_session,
+)
 
 
 class TestWebsocketSession(unittest.TestCase):

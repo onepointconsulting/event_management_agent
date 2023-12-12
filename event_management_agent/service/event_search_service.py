@@ -142,13 +142,16 @@ async def process_stream(stream: Union[str, AsyncStream], stream_func: Callable)
             stream_func(message_text)
 
 
-async def aprocess_stream(stream: Union[str, AsyncStream], stream_func: Callable):
+async def aprocess_stream(
+        stream: Union[str, AsyncStream], stream_func: Callable, session: WebsocketSession):
     if stream is None:
         await stream_func("Sorry, I could not find any events")
     elif isinstance(stream, str):
         await stream_func(stream)
     else:
         async for chunk in stream:
+            if session.stop_stream:
+                break
             if not isinstance(chunk, str):
                 chunk_message = chunk.choices[0].delta  # extract the message
                 if chunk_message.content is not None:

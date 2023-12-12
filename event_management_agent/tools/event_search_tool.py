@@ -12,7 +12,7 @@ def event_search(
     locality: Optional[str] = "",
     country: Optional[str] = "",
     tags: List[str] = [],
-    repeat: bool = True
+    repeat: bool = True,
 ) -> str:
     offset: int = 0
     limit: int = 20
@@ -36,7 +36,12 @@ def event_search(
 
     events = parsed.get("events", [])
 
-    if len(events) == 0 and len(search) == 0 and len(country_filter) > 0 and repeat == True:
+    if (
+        len(events) == 0
+        and len(search) == 0
+        and len(country_filter) > 0
+        and repeat == True
+    ):
         # If the search returns no events and the search is empty and the country filter is the only parameter, just search for the country filter in the second try.
         return event_search(country_filter, repeat=False)
     else:

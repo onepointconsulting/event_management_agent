@@ -38,7 +38,7 @@ async def question(sid: str, data: str):
 
     try:
         search_result = await process_search(data, session, True)
-        await aprocess_stream(search_result, stream_to_client)
+        await aprocess_stream(search_result, stream_to_client, session)
     except:
         logger.exception(f"Failed to process {data}")
         await send_simple_message("Failed to process request. Please try again.", sid)
@@ -50,6 +50,14 @@ async def question(sid: str, data: str):
 @sio.event
 def disconnect(sid):
     logger.info("disconnect %s", sid)
+    
+
+
+@sio.event
+def stop_stream(sid):
+    logger.info("stopping stream %s", sid)
+    session = get_session(sid)
+    session.handle_stop_stream()
 
 
 if __name__ == "__main__":

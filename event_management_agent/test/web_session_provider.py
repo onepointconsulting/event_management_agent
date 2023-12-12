@@ -1,7 +1,7 @@
 from event_management_agent.server.session import get_session
 
 
-def create_dummy_websocket_session(session_id = "1"):
+def create_dummy_websocket_session(session_id="1"):
     session = get_session(session_id)
     assert session.socket_id == session_id
     question = "What is the meaning of life?"
