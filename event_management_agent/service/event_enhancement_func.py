@@ -5,10 +5,14 @@ import json
 def event_enhancement(events_list: List[str], urls: str) -> str:
     urls_list = json.loads(urls)
     url_map = {event["id"]: event for event in urls_list}
+    image_keys = ["image1_url", "image2_url", "image3_url"]
     for event in events_list:
         url_info = url_map.get(event["id"])
         if url_info is not None:
             event["url"] = url_info["url"]
+            for image_key in image_keys:
+                if image_key in url_info:
+                    event[image_key] = url_info[image_key]
     return json.dumps(events_list)
 
 

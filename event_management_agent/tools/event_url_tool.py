@@ -8,7 +8,7 @@ def event_url_request(event_ids: List[int]) -> str:
     if len(event_ids) == 0:
         return {}
     return process_event_ids_request(
-        "https://events.brahmakumaris.org/bkregistration/events?eventIds={event_ids_str}",
+        "https://events.brahmakumaris.org/bkregistration/events/urls?eventIds={event_ids_str}",
         event_ids,
         "Cannot fetch data for single events",
     )
