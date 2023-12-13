@@ -39,7 +39,7 @@ The application can be configured via a `.env` file. The easiest way to start is
 Change directory to the root folder of the project and run:
 
 ```
-python .\event_management_agent\server\websocket_server.py
+python ./event_management_agent/server/websocket_server.py
 ```
 
 ## Running unit tests
@@ -47,3 +47,11 @@ python .\event_management_agent\server\websocket_server.py
 ```
 python -m unittest
 ```
+
+### Notice about problems with MIME Types whilst service Javascript files
+
+If your Js files are being served by our script `websocket_server.py` under Windows 10 or 11 and you get an error like:
+
+`Expected a JavaScript module script but the server responded with a MIME type of "text/plain"`
+
+Please open `regedit.exe` on Windows and edit the Content-Type value for this key: `HKEY_CLASSES_ROOT\.js` to `application/javascript`.

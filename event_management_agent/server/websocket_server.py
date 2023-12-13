@@ -14,6 +14,7 @@ sio = socketio.AsyncServer(cors_allowed_origins=cfg.websocket_cors_allowed_origi
 app = web.Application()
 sio.attach(app)
 
+routes = web.RouteTableDef()
 
 @sio.event
 def connect(sid, environ):
@@ -50,7 +51,6 @@ async def question(sid: str, data: str):
 @sio.event
 def disconnect(sid):
     logger.info("disconnect %s", sid)
-    
 
 
 @sio.event
@@ -60,5 +60,15 @@ def stop_stream(sid):
     session.handle_stop_stream()
 
 
+# HTTP part
+
+@routes.get("/")
+async def get_handler(_):
+    raise web.HTTPFound("/index.html")
+
+
 if __name__ == "__main__":
+    app.add_routes(routes)
+    # Added support for UI folder.
+    app.router.add_static("/", path=cfg.ui_folder.as_posix(), name="ui")
     web.run_app(app, host=cfg.websocket_server, port=cfg.websocket_port)

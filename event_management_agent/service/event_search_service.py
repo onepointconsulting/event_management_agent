@@ -143,7 +143,8 @@ async def process_stream(stream: Union[str, AsyncStream], stream_func: Callable)
 
 
 async def aprocess_stream(
-        stream: Union[str, AsyncStream], stream_func: Callable, session: WebsocketSession):
+    stream: Union[str, AsyncStream], stream_func: Callable, session: WebsocketSession
+):
     if stream is None:
         await stream_func("Sorry, I could not find any events")
     elif isinstance(stream, str):

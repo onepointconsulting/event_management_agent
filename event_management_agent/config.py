@@ -9,6 +9,11 @@ from openai import AsyncOpenAI
 load_dotenv()
 
 
+def create_if_not_exists(path: Path):
+    if not path.exists():
+        path.mkdir(parents=True, exist_ok=True)
+
+
 class Config:
     openai_api_key = os.getenv("OPENAI_API_KEY")
     assert openai_api_key is not None
@@ -33,6 +38,10 @@ class Config:
     history_token_limit = int(os.getenv("HISTORY_TOKEN_LIMIT"))
 
     search_results_size = int(os.getenv("SEARCH_RESULTS_SIZE"))
+
+    # UI Related
+    ui_folder = Path(os.getenv("UI_FOLDER"))
+    create_if_not_exists(ui_folder)
 
     def __repr__(self) -> str:
         return f"""
