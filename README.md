@@ -4,18 +4,21 @@ Simple agent which demonstrates how you can create conversational agents on top 
 
 These are the interfaces:
 
-#### Events by keyword and country
+#### Events Search by keyword and country
+
+Examples:
+
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive&limit=20&offset=0&filterByCountry=United%20Kingdom&includeDescription=true
 
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive%20%20London&limit=20&offset=0&filterByCountry=United%20Kingdom&includeDescription=true
 
 GET https://events.brahmakumaris.org/events-rest/event-search-v2?search=positive&limit=10&offset=0
 
-#### Single Event Detail
-GET https://events.brahmakumaris.org/bkregistration/organisationEventReportController.do?simpleEventTemplate=jsonEvent.ftl&mimeType=text/plain&eventIds=4256334,4256334
+#### Enrichment interface
 
-#### Fetch Event URLs
-GET https://events.brahmakumaris.org/bkregistration/events?eventIds=4256334,5678
+Example:
+
+GET https://events.brahmakumaris.org/bkregistration/events/urls?eventIds=47944,4256334,5678,4654963,4570348
 
 ## Installation instructions
 

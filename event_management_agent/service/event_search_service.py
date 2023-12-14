@@ -13,9 +13,6 @@ from event_management_agent.tools.event_search_tool import (
     event_search,
 )  # Keep event search. Do not remove it
 from event_management_agent.log_factory import logger
-from event_management_agent.tools.single_event_tool import (
-    function_description_single_event,
-)
 from event_management_agent.tools.event_url_tool import event_url_request
 from event_management_agent.service.event_enhancement_func import (
     extract_event_ids,
@@ -58,7 +55,7 @@ async def event_search_openai(
         model=cfg.openai_model,
         temperature=cfg.open_ai_temperature,
         messages=messages,
-        functions=[function_description_search, function_description_single_event],
+        functions=[function_description_search],
         stream=stream,
         **kwargs,
     )
