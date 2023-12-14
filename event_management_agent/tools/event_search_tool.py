@@ -21,7 +21,7 @@ def event_search(
         if country is not None and len(country) > 0
         else ""
     )
-    tags_param = f"&tags={", ".join(tags)}" if len(tags) > 0 else ""
+    tags_param = f"&tags={', '.join(tags)}" if len(tags) > 0 else ""
     if locality is not None and len(locality) > 0:
         if len(search) > 0:
             # If the locality is not empty and the search also not, use the Lucene AND search operator
@@ -36,14 +36,15 @@ def event_search(
 
     events = parsed.get("events", [])
 
-    if (
-        len(events) == 0
-        and len(search) == 0
-        and len(country_filter) > 0
-        and repeat == True
-    ):
-        # If the search returns no events and the search is empty and the country filter is the only parameter, just search for the country filter in the second try.
-        return event_search(country_filter, repeat=False)
+    if len(events) == 0 and len(search) == 0 and repeat == True:
+        if len(country_filter) > 0:
+            # If the search returns no events and the search is empty and the country filter is the only parameter, just search for the country filter in the second try.
+            return event_search(country_filter, repeat=False)
+        elif len(tags) > 0:
+            tag_str = " ".join(tags)
+            return event_search(tag_str, repeat=False)
+        else:
+            return res
     else:
         return res
 

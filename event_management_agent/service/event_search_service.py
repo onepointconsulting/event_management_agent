@@ -11,7 +11,7 @@ from event_management_agent.server.session import (
 from event_management_agent.tools.event_search_tool import (
     function_description_search,
     event_search,
-)  # Keep event search. Do not remove it
+)  # Keep event_search import. Do not remove it. It is needed even though it is called via eval
 from event_management_agent.log_factory import logger
 from event_management_agent.tools.event_url_tool import event_url_request
 from event_management_agent.service.event_enhancement_func import (
@@ -26,6 +26,14 @@ def extract_event_search_parameters(
     function_call_name: Optional[str] = None,
     function_output: Optional[str] = None,
 ):
+    """
+    Extract parameters for event search from the user's prompt, function call name, and function output.
+
+    :param user_prompt: The prompt given by the user to search for events.
+    :param function_call_name: Optional; The name of the function that was called.
+    :param function_output: Optional; The output of the function that was called.
+    :return: A tuple containing the system and user messages and keyword arguments for the API call.
+    """
     system_message = prompts["events"]["system_message"]
     assert system_message is not None
     messages = [
@@ -48,6 +56,16 @@ async def event_search_openai(
     function_output: Optional[str] = None,
     stream: bool = False,
 ) -> Optional[ChatCompletionMessage]:
+    """
+    Asynchronously interact with OpenAI's chat API to perform event search.
+
+    :param user_prompt: The prompt given by the user to search for events.
+    :param function_call_name: Optional; The name of the function that was called previously.
+    :param function_output: Optional; The output of the function that was called.
+    :param stream: Whether to stream responses as they are generated or not.
+    :return: A ChatCompletionMessage object containing the response, or None if no choices.
+    """
+
     messages, kwargs = extract_event_search_parameters(
         user_prompt, function_call_name, function_output
     )
@@ -71,24 +89,40 @@ async def event_search_openai(
 def execute_chat_function(
     chat_completion_message: Optional[ChatCompletionMessage],
 ) -> Tuple[str, str]:
+    """
+    Execute a chat function from the received ChatCompletionMessage.
+
+    :param chat_completion_message: The completion message received from the chat interaction.
+    :return: A tuple containing the function name and the JSON response from executing the function.
+    """
     if chat_completion_message is None or chat_completion_message.function_call is None:
         return ""
     func_name = chat_completion_message.function_call.name
     func_args = chat_completion_message.function_call.arguments
     if isinstance(func_args, str):
         func_args = json.loads(func_args)
+    # Convert the name of the function into an actual function pointer
     chosen_func = eval(func_name)
     if "search" not in func_args:
         if "locality" in func_args:
             func_args["search"] = func_args["locality"]
         else:
             func_args["search"] = ""
+    # Execute the function
     return func_name, chosen_func(**func_args)
 
 
 async def process_search(
     user_prompt: str, session: WebsocketSession, stream: bool
 ) -> Union[str, AsyncStream]:
+    """
+    Asynchronously process the event search with OpenAI and enhance the results with additional information.
+
+    :param user_prompt: The prompt given by the user to search for events.
+    :param session: The WebsocketSession object for the current user session.
+    :param stream: Whether to stream responses as they are generated or not.
+    :return: A final completion message or stream of messages depending on the stream parameter.
+    """
     completion_message = await event_search_openai(user_prompt)
     logger.info(completion_message)
     logger.info(type(completion_message))
@@ -142,11 +176,22 @@ async def process_stream(stream: Union[str, AsyncStream], stream_func: Callable)
 async def aprocess_stream(
     stream: Union[str, AsyncStream], stream_func: Callable, session: WebsocketSession
 ):
+    """
+    If the stream is None or a string a message is output via a call to stream_func, otherwise 
+    the stream is processed via an asynchronous loop until either the stream is cancelled or
+    fully consumed
+
+    :param stream: either a single string message or the stream of tokens to be consuled
+    :param stream_func: The function which processes each stream token
+    :param session: The websocket session that has the flag stop_stream that indicates that the stream processing should be stopped.
+    
+    """
     if stream is None:
         await stream_func("Sorry, I could not find any events")
     elif isinstance(stream, str):
         await stream_func(stream)
     else:
+        # Asynchronously loop through the stream provided by OpenAI
         async for chunk in stream:
             if session.stop_stream:
                 break

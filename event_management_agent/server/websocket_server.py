@@ -16,6 +16,7 @@ sio.attach(app)
 
 routes = web.RouteTableDef()
 
+
 @sio.event
 def connect(sid, environ):
     logger.info("connect %s ", sid)
@@ -72,6 +73,7 @@ def stop_stream(sid):
 
 
 # HTTP part
+
 
 @routes.get("/")
 async def get_handler(_):
