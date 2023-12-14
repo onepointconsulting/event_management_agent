@@ -28,6 +28,17 @@ async def send_simple_message(message: str, sid: str):
 
 @sio.event
 async def question(sid: str, data: str):
+    """
+    Handles a question event from a client.
+
+    This function adds the question to the session and starts the search process.
+    If the search process is successful, it streams the results to the client.
+
+    :param sid: The unique session ID for the client.
+    :type sid: str
+    :param data: The question from the client.
+    :type data: str
+    """
     logger.info("question (%s): %s", sid, data)
     session = get_session(sid)
     session.add_question(data)
