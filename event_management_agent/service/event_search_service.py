@@ -25,7 +25,7 @@ def extract_event_search_parameters(
     user_prompt: str,
     function_call_name: Optional[str] = None,
     function_output: Optional[str] = None,
-):
+) -> Tuple[dict, dict]:
     """
     Extract parameters for event search from the user's prompt, function call name, and function output.
 
