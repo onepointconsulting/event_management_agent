@@ -177,14 +177,14 @@ async def aprocess_stream(
     stream: Union[str, AsyncStream], stream_func: Callable, session: WebsocketSession
 ):
     """
-    If the stream is None or a string a message is output via a call to stream_func, otherwise 
+    If the stream is None or a string a message is output via a call to stream_func, otherwise
     the stream is processed via an asynchronous loop until either the stream is cancelled or
     fully consumed
 
     :param stream: either a single string message or the stream of tokens to be consuled
     :param stream_func: The function which processes each stream token
     :param session: The websocket session that has the flag stop_stream that indicates that the stream processing should be stopped.
-    
+
     """
     if stream is None:
         await stream_func("Sorry, I could not find any events")

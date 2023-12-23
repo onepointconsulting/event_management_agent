@@ -2,6 +2,7 @@ from typing import List
 import json
 from event_management_agent.log_factory import logger
 
+
 def event_enhancement(events_list: List[str], urls: str) -> str:
     urls_list = json.loads(urls)
     try:

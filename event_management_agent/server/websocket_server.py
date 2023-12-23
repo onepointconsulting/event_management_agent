@@ -9,6 +9,10 @@ from event_management_agent.service.event_search_service import (
     process_search,
     aprocess_stream,
 )
+from enum import StrEnum
+
+class Commands(StrEnum):
+    SERVER_MESSAGE = "server_message"
 
 sio = socketio.AsyncServer(cors_allowed_origins=cfg.websocket_cors_allowed_origins)
 app = web.Application()
@@ -24,11 +28,11 @@ def connect(sid, environ):
 
 async def send_simple_message(message: str, sid: str):
     response_text = ResponseText(response=message, sources=None)
-    await sio.emit("response", response_text.model_dump_json(), room=sid)
+    await sio.emit(Commands.SERVER_MESSAGE, response_text.model_dump_json(), room=sid)
 
 
 @sio.event
-async def question(sid: str, data: str):
+async def client_message(sid: str, data: str):
     """
     Handles a question event from a client.
 
