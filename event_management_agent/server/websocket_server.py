@@ -11,8 +11,10 @@ from event_management_agent.service.event_search_service import (
 )
 from enum import StrEnum
 
+
 class Commands(StrEnum):
     SERVER_MESSAGE = "server_message"
+
 
 sio = socketio.AsyncServer(cors_allowed_origins=cfg.websocket_cors_allowed_origins)
 app = web.Application()

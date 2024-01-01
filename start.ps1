@@ -1,0 +1,2 @@
+conda activate event_management_agent
+python ./event_management_agent/server/websocket_server.py
